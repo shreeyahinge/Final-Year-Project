@@ -27,7 +27,55 @@ const getImageData = async (imageInput) => {
   return { base64: imageInput, mimeType: "image/jpeg" };
 };
 
+const localModelUrl = () => process.env.ML_SERVICE_URL;
+
+// Local YOLO11 model served by ml/service. Returns the same shape as the Gemini path.
+// The model has no "not a bin" class, so isWaste is always true here.
+const analyseWithLocalModel = async (imageInput) => {
+  try {
+    if (!localModelUrl()) throw new Error("ML_SERVICE_URL is not set in server/.env");
+    const body = {};
+    if (process.env.ML_MODEL_VERSION) body.version = process.env.ML_MODEL_VERSION;
+    if (typeof imageInput === "string" && /^https?:\/\//.test(imageInput)) {
+      body.image_url = imageInput;
+    } else {
+      body.image_base64 = imageInput;
+    }
+
+    const { data } = await axios.post(`${localModelUrl()}/predict`, body, { timeout: 10000 });
+    const label = data.class;
+    const confidence = Math.round(data.confidence * 100);
+
+    return {
+      isWaste: true,
+      // aiScore drives priority in reportController, so use the fill level (0/50/100)
+      aiScore: data.fill_percent,
+      fillLevel: data.fill_percent,
+      labels: [label],
+      wasteLabels: [label],
+      wasteType: "unknown",
+      reasoning: `Local model ${data.version}: ${label} (${confidence}% confidence)`,
+    };
+  } catch (error) {
+    console.error("Local model error:", error.message);
+    return {
+      isWaste: true,
+      aiScore: 60,
+      fillLevel: 60,
+      labels: ["waste", "bin"],
+      wasteLabels: ["waste"],
+      wasteType: "unknown",
+      reasoning: "Local model unavailable — using default values",
+      error: error.message,
+    };
+  }
+};
+
 const analyseWasteImage = async (imageInput) => {
+  if (process.env.AI_PROVIDER === "local") {
+    return analyseWithLocalModel(imageInput);
+  }
+
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
