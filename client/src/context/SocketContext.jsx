@@ -1,0 +1,57 @@
+import { createContext, useContext, useEffect, useState } from "react";
+import { io } from "socket.io-client";
+import { useAuth } from "./AuthContext";
+import toast from "react-hot-toast";
+
+const SocketContext = createContext();
+
+export const SocketProvider = ({ children }) => {
+  const { user } = useAuth();
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const getSocketUrl = () => {
+      if (typeof window !== "undefined") {
+        return `http://${window.location.hostname}:5001`;
+      }
+      return "http://localhost:5001";
+    };
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || getSocketUrl();
+    const newSocket = io(socketUrl);
+    setSocket(newSocket);
+
+    // Join the right room based on role
+    if (user.role === "admin") {
+      newSocket.emit("join_admin");
+    } else if (user.role === "officer") {
+      newSocket.emit("join_officer", user.city || "general");
+    }
+
+    // Listen for critical reports (admin)
+    newSocket.on("new_critical_report", (data) => {
+      toast.error(`🚨 ${data.message}`, { duration: 6000 });
+    });
+
+    // Listen for task completion (admin)
+    newSocket.on("task_completed", (data) => {
+      toast.success(`✅ ${data.message}`, { duration: 5000 });
+    });
+
+    // Listen for new tasks (officer)
+    newSocket.on("new_task_assigned", (data) => {
+      toast.success(`📋 ${data.message}`, { duration: 5000 });
+    });
+
+    return () => newSocket.disconnect();
+  }, [user]);
+
+  return (
+    <SocketContext.Provider value={{ socket }}>
+      {children}
+    </SocketContext.Provider>
+  );
+};
+
+export const useSocket = () => useContext(SocketContext);
