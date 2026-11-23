@@ -17,7 +17,7 @@ FILL = {"empty": 0, "halffull": 50, "full": 100}
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 
 ML_DIR = Path(__file__).resolve().parent
-DEFAULT_WEIGHTS = ML_DIR.parent / "runs" / "classify" / "ml" / "runs" / "baseline-v1" / "weights" / "best.pt"
+DEFAULT_WEIGHTS = ML_DIR / "models" / "v1" / "best.pt"
 TEST_DIR = ML_DIR / "data" / "cls" / "test_real"
 
 
