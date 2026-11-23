@@ -24,6 +24,10 @@ const reportSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    modelVersion: {
+      type: String,
+      default: "",
+    },
     fillLevel: {
       type: Number,
       default: 0,

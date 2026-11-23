@@ -1,14 +1,7 @@
 import axios from "axios";
 
-const getBaseURL = () => {
-  if (typeof window !== "undefined") {
-    return `http://${window.location.hostname}:5001/api`;
-  }
-  return "http://localhost:5001/api";
-};
-
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || getBaseURL(),
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 // Automatically attach token to every request

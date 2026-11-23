@@ -55,6 +55,7 @@ const analyseWithLocalModel = async (imageInput) => {
       wasteLabels: [label],
       wasteType: "unknown",
       reasoning: `Local model ${data.version}: ${label} (${confidence}% confidence)`,
+      modelVersion: data.version,
     };
   } catch (error) {
     console.error("Local model error:", error.message);
@@ -66,6 +67,7 @@ const analyseWithLocalModel = async (imageInput) => {
       wasteLabels: ["waste"],
       wasteType: "unknown",
       reasoning: "Local model unavailable — using default values",
+      modelVersion: "fallback",
       error: error.message,
     };
   }
@@ -124,6 +126,7 @@ Analyse this image and respond ONLY with a valid JSON object in this exact forma
 
     return {
       isWaste: parsed.isWaste || false,
+      modelVersion: "gemini-1.5-flash",
       aiScore: Math.min(100, Math.max(0, parsed.aiScore || 0)),
       fillLevel: Math.min(100, Math.max(0, parsed.fillLevel || 0)),
       labels: parsed.wasteLabels || [],
@@ -142,6 +145,7 @@ Analyse this image and respond ONLY with a valid JSON object in this exact forma
       wasteLabels: ["waste"],
       wasteType: "unknown",
       reasoning: "AI analysis unavailable — using default values",
+      modelVersion: "fallback",
       error: error.message,
     };
   }

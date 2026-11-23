@@ -150,11 +150,15 @@ export default function CitizenDashboard() {
       toast.error("Please select a bin");
       return;
     }
+    if (!form.photoUrl) {
+      toast.error("Please upload a photo before submitting");
+      return;
+    }
     setSubmitting(true);
     try {
       const response = await API.post("/reports", {
         binId: form.binId,
-        photoUrl: form.photoUrl || "https://example.com/bin-photo.jpg",
+        photoUrl: form.photoUrl,
         aiScore: parseFloat(form.aiScore) || 75,
         aiLabels: ["garbage bin", "waste"],
         fillLevel: parseFloat(form.fillLevel) || 70,

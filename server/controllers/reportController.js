@@ -33,7 +33,11 @@ const createReport = async (req, res) => {
     };
 
     if (photoUrl) {
-      console.log("Running Gemini AI analysis...");
+      console.log(
+        process.env.AI_PROVIDER === "local"
+          ? "Running local model analysis..."
+          : "Running Gemini AI analysis..."
+      );
       aiResult = await analyseWasteImage(photoUrl);
       console.log("AI Result:", aiResult);
     }
@@ -46,6 +50,7 @@ const createReport = async (req, res) => {
         photoUrl: photoUrl || "",
         aiScore: aiResult.aiScore,
         aiLabels: aiResult.wasteLabels,
+        modelVersion: aiResult.modelVersion || "",
         fillLevel: 0,
         priority: "rejected",
         status: "rejected",
@@ -76,6 +81,7 @@ const createReport = async (req, res) => {
       photoUrl: photoUrl || "",
       aiScore: aiResult.aiScore,
       aiLabels: aiResult.wasteLabels,
+      modelVersion: aiResult.modelVersion || "",
       fillLevel: finalFillLevel,
       priority,
       status: "pending",

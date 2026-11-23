@@ -12,13 +12,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (!user) return;
 
-    const getSocketUrl = () => {
-      if (typeof window !== "undefined") {
-        return `http://${window.location.hostname}:5001`;
-      }
-      return "http://localhost:5001";
-    };
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || getSocketUrl();
+    const socketUrl = import.meta.env.VITE_SOCKET_URL;
     const newSocket = io(socketUrl);
     setSocket(newSocket);
 
