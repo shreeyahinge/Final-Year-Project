@@ -1,0 +1,40 @@
+{
+  "version": "v1",
+  "task": "classification",
+  "architecture": "yolo11n-cls",
+  "weights": "best.pt",
+  "classes": ["empty", "halffull", "full"],
+  "fill_percent": {
+    "empty": 0,
+    "halffull": 50,
+    "full": 100
+  },
+  "imgsz": 224,
+  "training": {
+    "dataset": "akirsch1/waste-bin-dataset (simulated images only, 80/20 split)",
+    "epochs": 50,
+    "seed": 0,
+    "pretrained_start": "yolo11n-cls.pt (ImageNet)",
+    "run_name": "baseline-v1",
+    "best_epoch": 22,
+    "best_epoch_note": "1-based epoch as in results.csv. Ultralytics saves best.pt only on strict fitness improvement, so the first epoch reaching the top score is kept; epochs 43 and 50 tie but do not replace it. The stored checkpoint shows epoch -1 because it was stripped after training."
+  },
+  "metrics": {
+    "val_top1_accuracy": 0.913,
+    "real_test_top1_accuracy": 0.649,
+    "real_test_images": 74,
+    "real_per_class_accuracy": {
+      "empty": 0.955,
+      "halffull": 0.333,
+      "full": 0.842
+    },
+    "real_fill_mae_points": 18.2
+  },
+  "limitations": [
+    "No 'not a bin' class: cannot reject photos that do not show a bin.",
+    "Trained only on simulated images; real-image accuracy is much lower than validation.",
+    "Half-full photos are often predicted as full with high confidence."
+  ],
+  "ultralytics_version": "8.4.216",
+  "created": "2026-11-22"
+}
