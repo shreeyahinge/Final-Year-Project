@@ -50,12 +50,12 @@ const verifyCleanBinWithLocalModel = async (afterPhotoUrl) => {
 };
 
 const verifyCleanBin = async (afterPhotoUrl) => {
-  if (process.env.AI_PROVIDER === "local") {
+  if (process.env.AI_PROVIDER !== "gemini") {
     return verifyCleanBinWithLocalModel(afterPhotoUrl);
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL });
     const { base64, mimeType } = await urlToBase64(afterPhotoUrl);
 
     const prompt = `You are verifying whether a waste bin has been cleaned by a sanitation worker.

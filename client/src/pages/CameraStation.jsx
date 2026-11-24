@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import Navbar from "../components/Navbar";
 import API from "../api/axios";
 import toast from "react-hot-toast";
+import { fillState } from "../utils/fillState";
 import { useSocket } from "../context/SocketContext";
 
 export default function CameraStation() {
@@ -627,9 +628,9 @@ export default function CameraStation() {
                       </div>
 
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                        <span style={{ fontSize: "12px", color: "#6b7280" }}>AI Confidence:</span>
-                        <span style={{ fontWeight: "700", color: "#111827", fontSize: "13px" }}>
-                          🤖 {latestResult.aiResult?.aiScore || 0}%
+                        <span style={{ fontSize: "12px", color: "#6b7280" }}>Bin State:</span>
+                        <span style={{ fontWeight: "700", color: fillState(latestResult.aiResult?.fillLevel).color, fontSize: "13px" }}>
+                          {fillState(latestResult.aiResult?.fillLevel).label} ({latestResult.aiResult?.fillLevel || 0}%)
                         </span>
                       </div>
 

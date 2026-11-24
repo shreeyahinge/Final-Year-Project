@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
+import { fillState } from "../utils/fillState";
 
 const priorityColor = {
   low: "#10b981",
@@ -19,7 +20,7 @@ const statusColor = {
 };
 
 export default function CitizenDashboard() {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const [bins, setBins] = useState([]);
   const [myReports, setMyReports] = useState([]);
   const [activeTab, setActiveTab] = useState("report");
@@ -83,29 +84,33 @@ export default function CitizenDashboard() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       
-      // Get real-time GPS coordinates
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            setForm((prev) => ({
-              ...prev,
-              photoUrl: data.url,
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            }));
-            toast.success("Photo uploaded with GPS location!");
-          },
-          (error) => {
-            setForm((prev) => ({ ...prev, photoUrl: data.url }));
-            toast.error("Could not trace GPS location, using bin default.");
-          }
-        );
-      } else {
-        setForm((prev) => ({ ...prev, photoUrl: data.url }));
-        toast.success("Photo uploaded!");
-      }
+      // GPS disabled for now: the report uses the bin's own location.
+      // // Get real-time GPS coordinates
+      // if (navigator.geolocation) {
+      //   navigator.geolocation.getCurrentPosition(
+      //     (position) => {
+      //       setForm((prev) => ({
+      //         ...prev,
+      //         photoUrl: data.url,
+      //         latitude: position.coords.latitude,
+      //         longitude: position.coords.longitude,
+      //       }));
+      //       toast.success("Photo uploaded with GPS location!");
+      //     },
+      //     () => {
+      //       setForm((prev) => ({ ...prev, photoUrl: data.url }));
+      //       toast.success("Photo uploaded!");
+      //     }
+      //   );
+      // } else {
+      //   setForm((prev) => ({ ...prev, photoUrl: data.url }));
+      //   toast.success("Photo uploaded!");
+      // }
+
+      setForm((prev) => ({ ...prev, photoUrl: data.url }));
+      toast.success("Photo uploaded!");
     } catch (error) {
-      toast.error("Photo upload failed");
+      toast.error(error.response?.data?.message || "Photo upload failed");
     } finally {
       setUploadingPhoto(false);
     }
@@ -137,6 +142,12 @@ export default function CitizenDashboard() {
       setMyReports(reportsRes.data);
 
       setLeaderboard(leaderRes.data);
+
+      // Keep the top-right points in sync with the server (it changes after each report)
+      const meRes = await API.get("/auth/me");
+      if (user && meRes.data.greenPoints !== user.greenPoints) {
+        login({ ...user, greenPoints: meRes.data.greenPoints });
+      }
     } catch (error) {
       toast.error("Failed to load data");
     } finally {
@@ -159,7 +170,6 @@ export default function CitizenDashboard() {
       const response = await API.post("/reports", {
         binId: form.binId,
         photoUrl: form.photoUrl,
-        aiScore: parseFloat(form.aiScore) || 75,
         aiLabels: ["garbage bin", "waste"],
         fillLevel: parseFloat(form.fillLevel) || 70,
         notes: form.notes,
@@ -337,7 +347,7 @@ export default function CitizenDashboard() {
               </div>
 
               {/* Fill Level */}
-              <div style={styles.fieldGroup}>
+              {/* <div style={styles.fieldGroup}>
                 <label style={styles.label}>
                   Estimated Fill Level: {form.fillLevel || 70}%
                 </label>
@@ -366,23 +376,8 @@ export default function CitizenDashboard() {
                     }}
                   />
                 </div>
-              </div>
+              </div> */}
 
-              {/* AI Score (simulated for now) */}
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>AI Confidence Score (0-100)</label>
-                <input
-                  type="number"
-                  placeholder="e.g. 85 (will be auto-detected in production)"
-                  style={styles.input}
-                  value={form.aiScore}
-                  onChange={(e) =>
-                    setForm({ ...form, aiScore: e.target.value })
-                  }
-                  min="0"
-                  max="100"
-                />
-              </div>
 
               {/* Photo Upload */}
               <div style={styles.fieldGroup}>
@@ -503,7 +498,7 @@ export default function CitizenDashboard() {
                     </div>
                     <div style={styles.reportBottom}>
                       <span style={styles.reportDetail}>
-                        🤖 AI Score: {r.aiScore}%
+                        🗑️ {fillState(r.fillLevel).label}
                       </span>
                       <span style={styles.reportDetail}>
                         📊 Fill: {r.fillLevel}%

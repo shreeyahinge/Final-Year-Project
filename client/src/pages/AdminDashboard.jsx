@@ -5,6 +5,7 @@ import StatsCard from "../components/StatsCard";
 import BinMap from "../components/BinMap";
 import API from "../api/axios";
 import toast from "react-hot-toast";
+import { fillState } from "../utils/fillState";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Cell,
@@ -358,7 +359,7 @@ export default function AdminDashboard() {
                     <th style={styles.th}>Citizen</th>
                     <th style={styles.th}>Bin Location</th>
                     <th style={styles.th}>Fill Level</th>
-                    <th style={styles.th}>AI Score</th>
+                    <th style={styles.th}>Bin State</th>
                     <th style={styles.th}>Priority</th>
                     <th style={styles.th}>Report Status</th>
                     <th style={{ ...styles.th, minWidth: "220px", background: "#f0fdf4" }}>
@@ -431,13 +432,13 @@ export default function AdminDashboard() {
                             </div>
                           </td>
 
-                          {/* AI Score */}
+                          {/* Bin State */}
                           <td style={styles.td}>
                             <span style={{
                               fontWeight: "700",
-                              color: r.aiScore >= 80 ? "#dc2626" : r.aiScore >= 50 ? "#d97706" : "#059669",
+                              color: fillState(r.fillLevel).color,
                             }}>
-                              🤖 {r.aiScore}%
+                              {fillState(r.fillLevel).label} ({r.fillLevel}%)
                             </span>
                           </td>
 
@@ -955,7 +956,7 @@ export default function AdminDashboard() {
                         📍 {selectedReport.bin?.location?.address || `${selectedReport.city} ${selectedReport.ward}`}
                       </div>
                       <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "2px" }}>
-                        Reported by: <strong>{selectedReport.citizen?.name || "Citizen"}</strong> • AI Score: <strong>{selectedReport.aiScore}%</strong> • Fill: <strong>{selectedReport.fillLevel}%</strong>
+                        Reported by: <strong>{selectedReport.citizen?.name || "Citizen"}</strong> • State: <strong>{fillState(selectedReport.fillLevel).label}</strong> • Fill: <strong>{selectedReport.fillLevel}%</strong>
                       </div>
                     </div>
                   </div>

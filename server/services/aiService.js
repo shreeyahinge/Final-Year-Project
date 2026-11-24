@@ -74,12 +74,12 @@ const analyseWithLocalModel = async (imageInput) => {
 };
 
 const analyseWasteImage = async (imageInput) => {
-  if (process.env.AI_PROVIDER === "local") {
+  if (process.env.AI_PROVIDER !== "gemini") {
     return analyseWithLocalModel(imageInput);
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL });
 
     const { base64, mimeType } = await getImageData(imageInput);
 
@@ -126,7 +126,7 @@ Analyse this image and respond ONLY with a valid JSON object in this exact forma
 
     return {
       isWaste: parsed.isWaste || false,
-      modelVersion: "gemini-1.5-flash",
+      modelVersion: process.env.GEMINI_MODEL,
       aiScore: Math.min(100, Math.max(0, parsed.aiScore || 0)),
       fillLevel: Math.min(100, Math.max(0, parsed.fillLevel || 0)),
       labels: parsed.wasteLabels || [],

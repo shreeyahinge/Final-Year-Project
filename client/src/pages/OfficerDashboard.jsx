@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
+import { fillState } from "../utils/fillState";
 
 const priorityColor = {
   low: "#10b981",
@@ -241,7 +242,7 @@ export default function OfficerDashboard() {
                             📊 Fill Level: {task.bin?.fillLevel}%
                           </span>
                           <span style={styles.taskDetail}>
-                            🤖 AI Score: {task.report?.aiScore}%
+                            🗑️ {fillState(task.bin?.fillLevel).label}
                           </span>
                           <span style={styles.taskDetail}>
                             📅 {new Date(task.createdAt).toLocaleDateString()}
@@ -342,7 +343,7 @@ export default function OfficerDashboard() {
                       </span>
                     </div>
                     <div style={styles.reportDetails}>
-                      <span>🤖 AI: {r.aiScore}%</span>
+                      <span>🗑️ {fillState(r.fillLevel).label}</span>
                       <span>📊 Fill: {r.fillLevel}%</span>
                       <span>
                         📅 {new Date(r.createdAt).toLocaleDateString()}

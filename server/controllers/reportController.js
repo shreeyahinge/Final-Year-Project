@@ -34,7 +34,7 @@ const createReport = async (req, res) => {
 
     if (photoUrl) {
       console.log(
-        process.env.AI_PROVIDER === "local"
+        process.env.AI_PROVIDER !== "gemini"
           ? "Running local model analysis..."
           : "Running Gemini AI analysis..."
       );
