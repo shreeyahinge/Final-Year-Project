@@ -151,4 +151,35 @@ Analyse this image and respond ONLY with a valid JSON object in this exact forma
   }
 };
 
-module.exports = { analyseWasteImage };
+// Asks Gemini whether the photo shows a waste bin. Used only in local mode, where the
+// local model has no "not a bin" class. Returns true, false, or null if Gemini could not
+// answer (the caller lets the photo through in that case).
+const checkIsBinPhoto = async (imageInput) => {
+  try {
+    // Separate, lighter model for quick yes/no answers
+    const model = genAI.getGenerativeModel({ model: process.env.GEMINI_CHECK_MODEL });
+    const { base64, mimeType } = await getImageData(imageInput);
+    const prompt = [
+      { inlineData: { data: base64, mimeType } },
+      "Is this a photo of a waste bin or rubbish bin? Answer with only YES or NO.",
+    ];
+
+    // Gemini returns 503 when it is busy; retry a few times before giving up
+    let result;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        result = await model.generateContent(prompt);
+        break;
+      } catch (error) {
+        if (!String(error.message).includes("503") || attempt === 3) throw error;
+        await new Promise((resolve) => setTimeout(resolve, attempt * 2000));
+      }
+    }
+    return result.response.text().trim().toUpperCase().startsWith("YES");
+  } catch (error) {
+    console.warn("Bin check skipped (Gemini unavailable):", error.message);
+    return null;
+  }
+};
+
+module.exports = { analyseWasteImage, checkIsBinPhoto };

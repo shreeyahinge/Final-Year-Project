@@ -3,6 +3,7 @@ const router = express.Router();
 const { upload, cloudinary } = require("../config/cloudinary");
 const { protect } = require("../middleware/authMiddleware");
 const { preprocessImage, applyPrivacyBlur } = require("../services/imageService");
+const { checkIsBinPhoto } = require("../services/aiService");
 
 // @route  POST /api/upload
 router.post("/", protect, upload.single("photo"), async (req, res) => {
@@ -12,6 +13,11 @@ router.post("/", protect, upload.single("photo"), async (req, res) => {
     }
 
     const originalUrl = req.file.path;
+
+    // Start the bin check now, so it runs alongside preprocessing and blur.
+    // In Gemini mode the analysis already checks this, so it is skipped.
+    const binCheck =
+      process.env.AI_PROVIDER !== "gemini" ? checkIsBinPhoto(originalUrl) : Promise.resolve(true);
 
     // Apply preprocessing in background (don't block response)
     let processedUrl = originalUrl;
@@ -33,6 +39,15 @@ router.post("/", protect, upload.single("photo"), async (req, res) => {
       }
     } catch (e) {
       console.log("Privacy blur skipped:", e.message);
+    }
+
+    // Wait for the bin check, which has been running alongside preprocessing and blur
+    const isBin = await binCheck;
+    if (isBin === false) {
+      await cloudinary.uploader.destroy(req.file.filename).catch(() => {});
+      return res.status(400).json({
+        message: "This photo does not appear to show a bin. Please upload a clear photo of the bin.",
+      });
     }
 
     res.json({
