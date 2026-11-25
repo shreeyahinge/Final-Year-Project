@@ -37,6 +37,7 @@ Thumbs.db
 # Python
 __pycache__/
 *.pyc
+.venv/
 
 # Temporary Test Files
 test-db.js

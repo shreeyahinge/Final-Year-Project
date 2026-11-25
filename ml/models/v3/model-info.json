@@ -1,0 +1,48 @@
+{
+  "version": "v3",
+  "status": "testing",
+  "status_reason": "Trained on combined data (HF simulated + Roboflow), three classes. Copied here for app testing; not yet approved.",
+  "task": "classification",
+  "architecture": "yolo11n-cls",
+  "weights": "best.pt",
+  "classes": ["empty", "halffull", "full"],
+  "fill_percent": {
+    "empty": 0,
+    "halffull": 50,
+    "full": 100
+  },
+  "imgsz": 224,
+  "training": {
+    "dataset": "ml/data/combined3: HF simulated + Roboflow (train/val), overflowing mapped to full, no_bin excluded",
+    "epochs": 50,
+    "seed": 0,
+    "pretrained_start": "yolo11n-cls.pt (ImageNet)",
+    "augmentation": {
+      "hsv_v (brightness)": 0.4,
+      "degrees (rotation)": 0,
+      "scale": 0.5,
+      "erasing": 0.4
+    },
+    "run_name": "v1-3class"
+  },
+  "metrics": {
+    "real_test_top1_accuracy": 0.77,
+    "real_test_images": 74,
+    "real_per_class_accuracy": {
+      "empty": 0.909,
+      "halffull": 0.636,
+      "full": 0.842
+    },
+    "real_fill_mae_points": 11.5
+  },
+  "comparison_with_v1": {
+    "v1_real_test_top1_accuracy": 0.649,
+    "v1_real_fill_mae_points": 18.2
+  },
+  "limitations": [
+    "No 'not a bin' class: relies on the Gemini bin check at upload.",
+    "Half-full photos are often predicted as full or empty."
+  ],
+  "ultralytics_version": "8.4.216",
+  "created": "2026-11-25"
+}
