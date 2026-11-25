@@ -26,6 +26,7 @@ PRETRAINED_DIR = ML_DIR / "pretrained"
 def main():
     parser = argparse.ArgumentParser(description="Train a YOLO11 classification model.")
     parser.add_argument("--name", required=True, help="run name, e.g. v2")
+    parser.add_argument("--data", default=str(DATA_DIR), help="folder with train/ and val/ class folders")
     parser.add_argument("--model", default="yolo11s-cls.pt", help="pretrained model to start from")
     parser.add_argument("--imgsz", type=int, default=320)
     parser.add_argument("--epochs", type=int, default=50)
@@ -40,7 +41,7 @@ def main():
     model = YOLO(str(PRETRAINED_DIR / args.model))
 
     model.train(
-        data=str(DATA_DIR),
+        data=args.data,
         epochs=args.epochs,
         imgsz=args.imgsz,
         seed=args.seed,

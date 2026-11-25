@@ -178,6 +178,9 @@ export default function CitizenDashboard() {
       });
       if (response.data.message && response.data.message.includes("auto-rejected")) {
         toast.error(`❌ ${response.data.message}`, { duration: 5000 });
+      } else if (response.data.report?.status === "rejected") {
+        // Empty bin: no error, just a notice
+        toast(response.data.message, { icon: "ℹ️", duration: 5000 });
       } else {
         toast.success("✅ Report submitted! +10 Green Points earned!");
       }

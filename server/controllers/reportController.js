@@ -58,11 +58,15 @@ const createReport = async (req, res) => {
         city: bin.city,
         ward: bin.ward,
         area: bin.area,
-        notes: "Auto-rejected: AI could not detect waste in this photo.",
+        notes: process.env.AI_PROVIDER !== "gemini"
+          ? "Bin is empty"
+          : "Auto-rejected: AI could not detect waste in this photo.",
       });
 
       return res.status(200).json({
-        message: "Report auto-rejected — AI could not detect waste in this photo",
+        message: process.env.AI_PROVIDER !== "gemini"
+          ? "Bin looks empty — no collection needed"
+          : "Report auto-rejected — AI could not detect waste in this photo",
         report,
         aiAnalysis: {
           wasteType: aiResult.wasteType,
